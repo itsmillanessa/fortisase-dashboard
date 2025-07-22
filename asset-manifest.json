@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/fortisase-dashboard/static/css/main.84ce343a.css",
+    "main.js": "/fortisase-dashboard/static/js/main.f76092b4.js",
+    "index.html": "/fortisase-dashboard/index.html",
+    "main.84ce343a.css.map": "/fortisase-dashboard/static/css/main.84ce343a.css.map",
+    "main.f76092b4.js.map": "/fortisase-dashboard/static/js/main.f76092b4.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.84ce343a.css",
+    "static/js/main.f76092b4.js"
+  ]
+}
