@@ -532,9 +532,9 @@ const FortiSASEDashboard = () => {
 
   // SOLO AGREGAR: Panel de configuración SIMPLE
   const LicenseConfigPanel = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-red-600 text-white">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl my-8">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-red-600 text-white sticky top-0 z-10">
           <div className="flex items-center">
             <Settings className="h-6 w-6 mr-3" />
             <h2 className="text-xl font-bold">⚙️ Configurar Cantidades de Licencias</h2>
@@ -547,7 +547,7 @@ const FortiSASEDashboard = () => {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
+        <div className="p-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h3 className="font-medium text-blue-900 mb-2">📝 Instrucciones</h3>
             <p className="text-sm text-blue-800">
@@ -629,7 +629,7 @@ const FortiSASEDashboard = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
+        <div className="border-t border-gray-200 p-6 bg-gray-50 sticky bottom-0">
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-600">
               💾 Los cambios se guardan automáticamente
