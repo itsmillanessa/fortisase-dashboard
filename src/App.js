@@ -1,4 +1,4 @@
-// Actualización para src/App.js con las funcionalidades reales de FortiSASE Standard
+// Tu App.js EXACTO como está, solo con panel de configuración de licencias
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -530,6 +530,123 @@ const FortiSASEDashboard = () => {
     }
   };
 
+  // SOLO AGREGAR: Panel de configuración SIMPLE
+  const LicenseConfigPanel = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-red-600 text-white">
+          <div className="flex items-center">
+            <Settings className="h-6 w-6 mr-3" />
+            <h2 className="text-xl font-bold">⚙️ Configurar Cantidades de Licencias</h2>
+          </div>
+          <button
+            onClick={() => setShowConfigPanel(false)}
+            className="text-red-100 hover:text-white"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[70vh]">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-blue-900 mb-2">📝 Instrucciones</h3>
+            <p className="text-sm text-blue-800">
+              Ingresa las cantidades reales de licencias que tiene el cliente. 
+              Los porcentajes de aprovechamiento se calcularán automáticamente.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {featuresData.map((feature) => (
+              <div key={feature.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-grow">
+                    <h4 className="font-medium text-gray-900">{feature.name}</h4>
+                    <p className="text-sm text-gray-600">{feature.category}</p>
+                    <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs ${
+                      feature.businessValue === 'Crítico' ? 'bg-red-100 text-red-800' :
+                      feature.businessValue === 'Alto' ? 'bg-orange-100 text-orange-800' :
+                      feature.businessValue === 'Medio' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {feature.businessValue}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-2xl font-bold ${
+                      feature.utilizationRate >= 85 ? 'text-green-600' : 
+                      feature.utilizationRate >= 70 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {feature.utilizationRate}%
+                    </div>
+                    <div className="text-xs text-gray-500">Aprovechamiento</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Licencias Requeridas
+                    </label>
+                    <input
+                      type="number"
+                      value={feature.licensesRequired}
+                      onChange={(e) => updateFeature(feature.id, { 
+                        licensesRequired: parseInt(e.target.value) || 0 
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      min="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Licencias Activas
+                    </label>
+                    <input
+                      type="number"
+                      value={feature.licensesActive}
+                      onChange={(e) => updateFeature(feature.id, { 
+                        licensesActive: parseInt(e.target.value) || 0 
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      feature.utilizationRate >= 85 ? 'bg-green-500' : 
+                      feature.utilizationRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${feature.utilizationRate}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              💾 Los cambios se guardan automáticamente
+            </div>
+            <button
+              onClick={() => setShowConfigPanel(false)}
+              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Listo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -601,7 +718,7 @@ const FortiSASEDashboard = () => {
                 className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                {showConfigPanel ? 'Cerrar' : 'Configurar'}
+                Configurar Licencias
               </button>
               <button
                 onClick={exportReport}
@@ -627,7 +744,7 @@ const FortiSASEDashboard = () => {
                   <div className="mt-2 text-sm text-blue-700">
                     <p>
                       Para comenzar: <strong>1)</strong> Agrega el nombre del cliente haciendo clic en el ícono de edición, 
-                      <strong> 2)</strong> Configura las licencias adquiridas y activas por funcionalidad, 
+                      <strong> 2)</strong> Haz clic en "Configurar Licencias" para meter los datos reales, 
                       <strong> 3)</strong> Revisa el análisis de aprovechamiento y genera reportes ejecutivos.
                     </p>
                   </div>
@@ -637,8 +754,10 @@ const FortiSASEDashboard = () => {
           )}
         </div>
 
-        {/* Resto del componente continúa igual... */}
-        {/* Dashboard Principal */}
+        {/* Panel de configuración SOLO cuando se necesite */}
+        {showConfigPanel && <LicenseConfigPanel />}
+
+        {/* Todo tu dashboard EXACTO como está */}
         {!showCISOReport && (
           <>
             {/* Resumen de Aprovechamiento */}
@@ -778,7 +897,13 @@ const FortiSASEDashboard = () => {
 
               {/* Distribución de Estados */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">🔄 Distribución de Estados</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">🔄 Distribución de Estados</h3>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">{featuresData.length}</div>
+                    <div className="text-sm text-gray-600">Total Funcionalidades</div>
+                  </div>
+                </div>
                 <ResponsiveContainer width="100%" height={400}>
                   <PieChart>
                     <Pie
@@ -802,6 +927,22 @@ const FortiSASEDashboard = () => {
                     />
                   </PieChart>
                 </ResponsiveContainer>
+                
+                {/* Resumen numérico debajo del gráfico */}
+                <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-2xl font-bold text-green-600">{activeFeatures}</div>
+                    <div className="text-xs text-green-700">Activas</div>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="text-2xl font-bold text-yellow-600">{partialFeatures}</div>
+                    <div className="text-xs text-yellow-700">Parciales</div>
+                  </div>
+                  <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                    <div className="text-2xl font-bold text-red-600">{inactiveFeatures}</div>
+                    <div className="text-xs text-red-700">Inactivas</div>
+                  </div>
+                </div>
               </div>
             </div>
 
