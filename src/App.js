@@ -5,7 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { CheckCircle, AlertCircle, XCircle, Users, Shield, TrendingUp, Download, Settings, Edit3, Save, X, FileText, AlertTriangle, Target } from 'lucide-react';
 
 const FortiSASEDashboard = () => {
-  // Estados principales
   const [showConfigPanel, setShowConfigPanel] = useState(false);
   const [showCISOReport, setShowCISOReport] = useState(false);
   const [clientName, setClientName] = useState('');
@@ -27,7 +26,6 @@ const FortiSASEDashboard = () => {
     availableLicenses: 153
   });
 
-  // Funcionalidades FortiSASE REALES según la matriz Standard
   const [featuresData, setFeaturesData] = useState([
     {
       id: 'sia_ssl_inspection',
@@ -291,7 +289,6 @@ const FortiSASEDashboard = () => {
     }
   ]);
 
-  // Cargar datos del localStorage al inicio
   useEffect(() => {
     const savedConfig = localStorage.getItem('fortisase-client-config');
     
@@ -308,7 +305,6 @@ const FortiSASEDashboard = () => {
     }
   }, []);
 
-  // Calcular estadísticas generales
   const totalUtilization = Math.round(
     featuresData.reduce((acc, feature) => acc + (feature.utilizationRate || 0), 0) / featuresData.length
   );
@@ -317,26 +313,21 @@ const FortiSASEDashboard = () => {
   const partialFeatures = featuresData.filter(f => f.status === 'partial').length;
   const inactiveFeatures = featuresData.filter(f => f.status === 'inactive').length;
 
-  // Calcular métricas de funcionalidades críticas
   const criticalFeatures = featuresData.filter(f => f.businessValue === 'Crítico');
   const criticalActive = criticalFeatures.filter(f => f.status === 'active').length;
   const securityCoverage = criticalFeatures.length > 0 ? Math.round((criticalActive / criticalFeatures.length) * 100) : 0;
 
-  // Calcular gaps de configuración
   const configurationGaps = featuresData.filter(feature => {
     if (feature.status === 'inactive') return false;
     
-    // Verificar SSL Deep Inspection para funcionalidades que lo requieren
     if (feature.prerequisites.includes('ssl_inspection') && !feature.sslInspectionEnabled) {
       return true;
     }
     
-    // Verificar agent deployment
     if (feature.requirements.includes('Agent') && !feature.agentDeployed) {
       return true;
     }
     
-    // Verificar configuration gaps
     if (feature.configurationGaps && feature.configurationGaps.length > 0) {
       return true;
     }
@@ -344,7 +335,6 @@ const FortiSASEDashboard = () => {
     return false;
   });
 
-  // Funciones para el nombre del cliente
   const startEditingClient = () => {
     setTempClientName(clientName);
     setEditingClient(true);
@@ -361,7 +351,6 @@ const FortiSASEDashboard = () => {
     setEditingClient(false);
   };
 
-  // Funciones auxiliares
   const saveConfiguration = () => {
     const config = {
       clientName,
@@ -440,7 +429,7 @@ const FortiSASEDashboard = () => {
         prioridad: feature.businessValue || '',
         funcionalidad: feature.name || '',
         acciones_requeridas: feature.configurationGaps || [],
-        impacto_esperado: `Mejora en ${(feature.category || '').toLowerCase()}`
+        impacto_esperado: 'Mejora en ' + (feature.category || '').toLowerCase()
       }))
     };
 
@@ -448,21 +437,20 @@ const FortiSASEDashboard = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `FortiSASE-Standard-Aprovechamiento-${clientName || 'cliente'}-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = 'FortiSASE-Standard-Aprovechamiento-' + (clientName || 'cliente') + '-' + new Date().toISOString().split('T')[0] + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  // Datos para gráficos
   const utilizationData = featuresData.map((feature, index) => ({
     name: (feature.name || '').replace(/\s*\([^)]*\)/, '').slice(0, 15),
     fullName: feature.name || '',
     utilization: feature.utilizationRate || 0,
     active: feature.licensesActive || 0,
     required: feature.licensesRequired || 0,
-    id: `feature-${index}`
+    id: 'feature-' + index
   }));
 
   const statusData = [
@@ -471,40 +459,16 @@ const FortiSASEDashboard = () => {
     { name: 'Inactivas', value: inactiveFeatures, color: '#ef4444' }
   ];
 
-  const categoryData = featuresData.reduce((acc, feature) => {
-    const category = feature.category || 'Sin categoría';
-    if (!acc[category]) {
-      acc[category] = {
-        name: category,
-        total: 0,
-        active: 0,
-        utilization: 0,
-        licensesRequired: 0,
-        licensesActive: 0
-      };
-    }
-    acc[category].total += 1;
-    if (feature.status === 'active') acc[category].active += 1;
-    acc[category].licensesRequired += feature.licensesRequired || 0;
-    acc[category].licensesActive += feature.licensesActive || 0;
-    acc[category].utilization = acc[category].licensesRequired > 0 
-      ? Math.round((acc[category].licensesActive / acc[category].licensesRequired) * 100) 
-      : 0;
-    return acc;
-  }, {});
-
-  const categoryChartData = Object.values(categoryData);
-
   const getStatusIcon = (status) => {
     switch (status) {
       case 'active':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return React.createElement(CheckCircle, { className: "h-5 w-5 text-green-500" });
       case 'partial':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return React.createElement(AlertCircle, { className: "h-5 w-5 text-yellow-500" });
       case 'inactive':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return React.createElement(XCircle, { className: "h-5 w-5 text-red-500" });
       default:
-        return <AlertCircle className="h-5 w-5 text-gray-500" />;
+        return React.createElement(AlertCircle, { className: "h-5 w-5 text-gray-500" });
     }
   };
 
@@ -530,542 +494,620 @@ const FortiSASEDashboard = () => {
     }
   };
 
-  // SOLO AGREGAR: Panel de configuración SIMPLE
-  const LicenseConfigPanel = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl my-8">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-red-600 text-white sticky top-0 z-10">
-          <div className="flex items-center">
-            <Settings className="h-6 w-6 mr-3" />
-            <h2 className="text-xl font-bold">⚙️ Configurar Cantidades de Licencias</h2>
-          </div>
-          <button
-            onClick={() => setShowConfigPanel(false)}
-            className="text-red-100 hover:text-white"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
+  const LicenseConfigPanel = () => {
+    const [localValues, setLocalValues] = useState({});
 
-        <div className="p-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-blue-900 mb-2">📝 Instrucciones</h3>
-            <p className="text-sm text-blue-800">
-              Ingresa las cantidades reales de licencias que tiene el cliente. 
-              Los porcentajes de aprovechamiento se calcularán automáticamente.
-            </p>
-          </div>
+    const handleChange = (featureId, field, value) => {
+      // Actualizar valor local inmediatamente para que no se borre
+      const key = featureId + '_' + field;
+      const newLocalValues = Object.assign({}, localValues);
+      newLocalValues[key] = value;
+      setLocalValues(newLocalValues);
+    };
 
-          <div className="space-y-6">
-            {featuresData.map((feature) => (
-              <div key={feature.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-grow">
-                    <h4 className="font-medium text-gray-900">{feature.name}</h4>
-                    <p className="text-sm text-gray-600">{feature.category}</p>
-                    <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs ${
-                      feature.businessValue === 'Crítico' ? 'bg-red-100 text-red-800' :
-                      feature.businessValue === 'Alto' ? 'bg-orange-100 text-orange-800' :
-                      feature.businessValue === 'Medio' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {feature.businessValue}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-2xl font-bold ${
-                      feature.utilizationRate >= 85 ? 'text-green-600' : 
-                      feature.utilizationRate >= 70 ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
-                      {feature.utilizationRate}%
-                    </div>
-                    <div className="text-xs text-gray-500">Aprovechamiento</div>
-                  </div>
-                </div>
+    const handleBlur = (featureId, field, value) => {
+      // Solo actualizar el estado global cuando se termine de editar
+      if (value === '' || !isNaN(value)) {
+        const numValue = value === '' ? 0 : parseInt(value) || 0;
+        const updates = {};
+        updates[field] = numValue;
+        updateFeature(featureId, updates);
+      }
+    };
 
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Licencias Requeridas
-                    </label>
-                    <input
-                      type="number"
-                      value={feature.licensesRequired}
-                      onChange={(e) => updateFeature(feature.id, { 
-                        licensesRequired: parseInt(e.target.value) || 0 
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      min="0"
-                    />
-                  </div>
+    const getValue = (featureId, field, originalValue) => {
+      const key = featureId + '_' + field;
+      if (localValues.hasOwnProperty(key)) {
+        return localValues[key];
+      }
+      return originalValue || '';
+    };
+    return React.createElement('div', 
+      { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto" },
+      React.createElement('div', 
+        { className: "bg-white rounded-lg shadow-xl w-full max-w-5xl my-8" },
+        React.createElement('div', 
+          { className: "flex justify-between items-center p-6 border-b border-gray-200 bg-red-600 text-white sticky top-0 z-10" },
+          React.createElement('div', 
+            { className: "flex items-center" },
+            React.createElement(Settings, { className: "h-6 w-6 mr-3" }),
+            React.createElement('h2', { className: "text-xl font-bold" }, '⚙️ Configurar Cantidades de Licencias')
+          ),
+          React.createElement('button', 
+            { 
+              onClick: () => setShowConfigPanel(false),
+              className: "text-red-100 hover:text-white"
+            },
+            React.createElement(X, { className: "h-6 w-6" })
+          )
+        ),
+        React.createElement('div', 
+          { className: "p-6" },
+          React.createElement('div', 
+            { className: "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" },
+            React.createElement('h3', { className: "font-medium text-blue-900 mb-2" }, '📝 Instrucciones'),
+            React.createElement('p', { className: "text-sm text-blue-800" }, 
+              'Ingresa las cantidades reales de licencias que tiene el cliente. Los porcentajes de aprovechamiento se calcularán automáticamente.'
+            )
+          ),
+          React.createElement('div', 
+            { className: "space-y-6" },
+            featuresData.map((feature) => 
+              React.createElement('div', 
+                { 
+                  key: feature.id,
+                  className: "bg-gray-50 rounded-lg p-4 border border-gray-200"
+                },
+                React.createElement('div', 
+                  { className: "flex justify-between items-start mb-4" },
+                  React.createElement('div', 
+                    { className: "flex-grow" },
+                    React.createElement('h4', { className: "font-medium text-gray-900" }, feature.name),
+                    React.createElement('p', { className: "text-sm text-gray-600" }, feature.category),
+                    React.createElement('span', 
+                      { 
+                        className: 'inline-block mt-1 px-2 py-1 rounded-full text-xs ' + 
+                          (feature.businessValue === 'Crítico' ? 'bg-red-100 text-red-800' :
+                           feature.businessValue === 'Alto' ? 'bg-orange-100 text-orange-800' :
+                           feature.businessValue === 'Medio' ? 'bg-yellow-100 text-yellow-800' :
+                           'bg-green-100 text-green-800')
+                      }, 
+                      feature.businessValue
+                    )
+                  ),
+                  React.createElement('div', 
+                    { className: "text-right" },
+                    React.createElement('div', 
+                      { 
+                        className: 'text-2xl font-bold ' + 
+                          (feature.utilizationRate >= 85 ? 'text-green-600' : 
+                           feature.utilizationRate >= 70 ? 'text-yellow-600' : 'text-red-600')
+                      }, 
+                      feature.utilizationRate + '%'
+                    ),
+                    React.createElement('div', { className: "text-xs text-gray-500" }, 'Aprovechamiento')
+                  )
+                ),
+                React.createElement('div', 
+                  { className: "grid grid-cols-2 gap-4 mb-3" },
+                  React.createElement('div', 
+                    null,
+                    React.createElement('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, 'Licencias Requeridas'),
+                    React.createElement('input', {
+                      type: "text",
+                      value: getValue(feature.id, 'licensesRequired', feature.licensesRequired),
+                      onChange: (e) => handleChange(feature.id, 'licensesRequired', e.target.value),
+                      onBlur: (e) => handleBlur(feature.id, 'licensesRequired', e.target.value),
+                      className: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500",
+                      placeholder: "Ej: 1000"
+                    })
+                  ),
+                  React.createElement('div', 
+                    null,
+                    React.createElement('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, 'Licencias Activas'),
+                    React.createElement('input', {
+                      type: "number",
+                      value: feature.licensesActive,
+                      onChange: (e) => updateFeature(feature.id, { licensesActive: parseInt(e.target.value) || 0 }),
+                      className: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500",
+                      min: "0",
+                      placeholder: "Ej: 850"
+                    })
+                  )
+                ),
+                React.createElement('div', 
+                  { className: "w-full bg-gray-200 rounded-full h-3" },
+                  React.createElement('div', {
+                    className: 'h-3 rounded-full transition-all duration-300 ' + 
+                      (feature.utilizationRate >= 85 ? 'bg-green-500' : 
+                       feature.utilizationRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'),
+                    style: { width: feature.utilizationRate + '%' }
+                  })
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('div', 
+          { className: "border-t border-gray-200 p-6 bg-gray-50 sticky bottom-0" },
+          React.createElement('div', 
+            { className: "flex justify-between items-center" },
+            React.createElement('div', { className: "text-sm text-gray-600" }, '💾 Los cambios se guardan automáticamente'),
+            React.createElement('button', 
+              {
+                onClick: () => setShowConfigPanel(false),
+                className: "px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+              },
+              React.createElement(Save, { className: "h-4 w-4 mr-2" }),
+              'Listo'
+            )
+          )
+        )
+      )
+    );
+  };
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Licencias Activas
-                    </label>
-                    <input
-                      type="number"
-                      value={feature.licensesActive}
-                      onChange={(e) => updateFeature(feature.id, { 
-                        licensesActive: parseInt(e.target.value) || 0 
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-300 ${
-                      feature.utilizationRate >= 85 ? 'bg-green-500' : 
-                      feature.utilizationRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${feature.utilizationRate}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-gray-200 p-6 bg-gray-50 sticky bottom-0">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              💾 Los cambios se guardan automáticamente
-            </div>
-            <button
-              onClick={() => setShowConfigPanel(false)}
-              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Listo
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  📊 FortiSASE Health Check - Standard Licensing
-                </h1>
-                {/* Nombre del cliente editable */}
-                {editingClient ? (
-                  <div className="ml-4 flex items-center space-x-2">
-                    <span className="text-red-600 font-bold">-</span>
-                    <input
-                      type="text"
-                      value={tempClientName}
-                      onChange={(e) => setTempClientName(e.target.value)}
-                      placeholder="Nombre del cliente"
-                      className="px-3 py-1 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-600 font-bold"
-                      autoFocus
-                    />
-                    <button
-                      onClick={saveClientName}
-                      className="p-1 text-green-600 hover:text-green-700"
-                    >
-                      <Save className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={cancelEditingClient}
-                      className="p-1 text-red-600 hover:text-red-700"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="ml-4 flex items-center space-x-2">
-                    {clientName && <span className="text-red-600 font-bold">- {clientName}</span>}
-                    <button
-                      onClick={startEditingClient}
-                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="text-gray-600 mt-2">
-                Análisis de aprovechamiento de funcionalidades FortiSASE Standard License
-              </p>
-              <div className="flex items-center mt-3 text-sm text-gray-500">
-                <span className="mr-4">🔧 Licenciamiento Standard</span>
-                <span className="mr-4">📈 Análisis de Aprovechamiento</span>
-                <span className="mr-4">⚙️ Configuración de Funcionalidades</span>
-                <span>📋 Reporte Ejecutivo</span>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowCISOReport(!showCISOReport)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                {showCISOReport ? 'Dashboard' : 'Reporte Ejecutivo'}
-              </button>
-              <button
-                onClick={() => setShowConfigPanel(!showConfigPanel)}
-                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Configurar Licencias
-              </button>
-              <button
-                onClick={exportReport}
-                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar Análisis
-              </button>
-            </div>
-          </div>
-          
-          {/* Welcome Notice para nuevos usuarios */}
-          {!clientName && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">
-                    👋 ¡Bienvenido al FortiSASE Health Check!
-                  </h3>
-                  <div className="mt-2 text-sm text-blue-700">
-                    <p>
-                      Para comenzar: <strong>1)</strong> Agrega el nombre del cliente haciendo clic en el ícono de edición, 
-                      <strong> 2)</strong> Haz clic en "Configurar Licencias" para meter los datos reales, 
-                      <strong> 3)</strong> Revisa el análisis de aprovechamiento y genera reportes ejecutivos.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Panel de configuración SOLO cuando se necesite */}
-        {showConfigPanel && <LicenseConfigPanel />}
-
-        {/* Todo tu dashboard EXACTO como está */}
-        {!showCISOReport && (
-          <>
-            {/* Resumen de Aprovechamiento */}
-            <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-xl shadow-lg mb-8 p-8 text-white">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold">Aprovechamiento FortiSASE Standard</h2>
-                  <p className="text-red-100 mt-1">Estado actual de utilización de funcionalidades incluidas</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">{totalUtilization}%</div>
-                  <div className="text-red-100 text-sm">Aprovechamiento General</div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Licencias Totales */}
-                <div className="bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30">
-                  <div className="flex items-center justify-between mb-4">
-                    <Users className="h-10 w-10 text-red-200" />
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{licenseData.totalLicenses}</div>
-                      <div className="text-red-200 text-sm">Licencias Standard</div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-red-200">Utilizadas:</span>
-                    <span className="font-semibold">{licenseData.activeLicenses}</span>
-                  </div>
-                  <div className="flex justify-between text-sm mt-1">
-                    <span className="text-red-200">Disponibles:</span>
-                    <span className="font-semibold">{licenseData.availableLicenses}</span>
-                  </div>
-                </div>
-
-                {/* Funcionalidades */}
-                <div className="bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30">
-                  <div className="flex items-center justify-between mb-4">
-                    <Shield className="h-10 w-10 text-gray-200" />
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{activeFeatures}/{featuresData.length}</div>
-                      <div className="text-red-200 text-sm">Funcionalidades</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div>
-                      <div className="text-gray-200 font-bold">{activeFeatures}</div>
-                      <div className="text-red-200">Activas</div>
-                    </div>
-                    <div>
-                      <div className="text-amber-300 font-bold">{partialFeatures}</div>
-                      <div className="text-red-200">Parciales</div>
-                    </div>
-                    <div>
-                      <div className="text-red-300 font-bold">{inactiveFeatures}</div>
-                      <div className="text-red-200">Inactivas</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Aprovechamiento Crítico */}
-                <div className="bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30">
-                  <div className="flex items-center justify-between mb-4">
-                    <Target className="h-10 w-10 text-amber-300" />
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{securityCoverage}%</div>
-                      <div className="text-red-200 text-sm">Funciones Críticas</div>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className={`text-lg font-bold ${securityCoverage >= 90 ? 'text-green-300' : securityCoverage >= 70 ? 'text-yellow-300' : 'text-red-300'}`}>
-                      {criticalActive}/{criticalFeatures.length} ACTIVAS
-                    </div>
-                    <div className="text-red-200 text-xs">Funcionalidades críticas</div>
-                  </div>
-                </div>
-
-                {/* Gaps de Configuración */}
-                <div className="bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30">
-                  <div className="flex items-center justify-between mb-4">
-                    <AlertTriangle className="h-10 w-10 text-amber-300" />
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{configurationGaps.length}</div>
-                      <div className="text-red-200 text-sm">Gaps Config.</div>
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-red-200">SSL Inspection:</span>
-                      <span className="text-gray-200 font-semibold">{featuresData.filter(f => f.sslInspectionEnabled).length}/{featuresData.filter(f => f.prerequisites.includes('ssl_inspection')).length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-red-200">Agentes:</span>
-                      <span className="text-gray-200 font-semibold">{featuresData.filter(f => f.agentDeployed).length}/{featuresData.length}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Gráficos */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Gráfico de Aprovechamiento */}
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Aprovechamiento por Funcionalidad</h3>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={utilizationData} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 10, fill: '#374151' }} 
-                      angle={-45}
-                      textAnchor="end"
-                      height={100}
-                      interval={0}
-                    />
-                    <YAxis tick={{ fontSize: 12, fill: '#374151' }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#f9fafb', 
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px'
-                      }}
-                      formatter={(value, name) => [
-                        `${value}%`, 
-                        'Aprovechamiento'
-                      ]}
-                      labelFormatter={(label) => {
-                        const item = utilizationData.find(d => d.name === label);
-                        return item ? item.fullName : label;
-                      }}
-                    />
-                    <Bar dataKey="utilization" fill="#dc2626" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Distribución de Estados */}
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">🔄 Distribución de Estados</h3>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900">{featuresData.length}</div>
-                    <div className="text-sm text-gray-600">Total Funcionalidades</div>
-                  </div>
-                </div>
-                <ResponsiveContainer width="100%" height={400}>
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      dataKey="value"
-                      label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#f9fafb', 
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                
-                {/* Resumen numérico debajo del gráfico */}
-                <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div className="text-2xl font-bold text-green-600">{activeFeatures}</div>
-                    <div className="text-xs text-green-700">Activas</div>
-                  </div>
-                  <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div className="text-2xl font-bold text-yellow-600">{partialFeatures}</div>
-                    <div className="text-xs text-yellow-700">Parciales</div>
-                  </div>
-                  <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                    <div className="text-2xl font-bold text-red-600">{inactiveFeatures}</div>
-                    <div className="text-xs text-red-700">Inactivas</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tabla de Funcionalidades */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">📋 Funcionalidades FortiSASE Standard</h3>
-                <p className="text-sm text-gray-600 mt-1">Basado en la matriz oficial de funcionalidades por licencia</p>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {featuresData.map((feature) => (
-                    <div key={feature.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-grow">
-                          <h4 className="font-medium text-gray-900 text-sm">{feature.name}</h4>
-                          <p className="text-xs text-gray-600 mt-1">{feature.category}</p>
-                        </div>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(feature.status)}`}>
-                          {getStatusIcon(feature.status)}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Licencias:</span>
-                          <span className="font-medium">{feature.licensesActive}/{feature.licensesRequired}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
-                            <div
-                              className={`h-2 rounded-full ${
-                                feature.utilizationRate >= 85 ? 'bg-green-500' : 
-                                feature.utilizationRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${feature.utilizationRate}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-xs text-gray-900 min-w-[35px]">{feature.utilizationRate}%</span>
-                        </div>
-                        
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Prioridad:</span>
-                          <span className={`text-xs px-2 py-1 rounded-full border ${getValueColor(feature.businessValue)}`}>
-                            {feature.businessValue}
-                          </span>
-                        </div>
-                        
-                        {/* Estado de configuración */}
-                        {feature.configurationStatus && (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-gray-600">Config:</span>
-                            <span className={`px-2 py-1 rounded-full ${
-                              feature.configurationStatus === 'Completa' ? 'bg-green-100 text-green-800' :
-                              feature.configurationStatus === 'Incompleta' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {feature.configurationStatus}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Acciones Rápidas */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">⚡ Acciones Rápidas</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-900 mb-2">📊 Reporte Ejecutivo</h4>
-                  <p className="text-sm text-blue-800 mb-3">
-                    Generar reporte completo con análisis y recomendaciones para presentar a la dirección
-                  </p>
-                  <button 
-                    onClick={() => setShowCISOReport(true)}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Ver Reporte
-                  </button>
-                </div>
-                
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h4 className="font-medium text-green-900 mb-2">⚙️ Configurar Licencias</h4>
-                  <p className="text-sm text-green-800 mb-3">
-                    Ajustar las cantidades de licencias adquiridas y en uso para cada funcionalidad
-                  </p>
-                  <button 
-                    onClick={() => setShowConfigPanel(true)}
-                    className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                  >
-                    Configurar
-                  </button>
-                </div>
-                
-                <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <h4 className="font-medium text-amber-900 mb-2">📥 Exportar Análisis</h4>
-                  <p className="text-sm text-amber-800 mb-3">
-                    Descargar el análisis completo en formato JSON para integración con otros sistemas
-                  </p>
-                  <button 
-                    onClick={exportReport}
-                    className="text-sm bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700"
-                  >
-                    Exportar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>📊 FortiSASE Health Check v5.0 - Standard License Analysis</p>
-          <p className="mt-1">🎯 Basado en la matriz oficial de funcionalidades FortiSASE</p>
-        </div>
-      </div>
-    </div>
+  return React.createElement('div', 
+    { className: "min-h-screen bg-gray-50 p-6" },
+    React.createElement('div', 
+      { className: "max-w-7xl mx-auto" },
+      React.createElement('div', 
+        { className: "bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-6" },
+        React.createElement('div', 
+          { className: "flex justify-between items-center" },
+          React.createElement('div', 
+            null,
+            React.createElement('div', 
+              { className: "flex items-center" },
+              React.createElement('h1', { className: "text-3xl font-bold text-gray-900" }, 
+                '📊 FortiSASE Health Check - Standard Licensing'
+              ),
+              editingClient ? 
+                React.createElement('div', 
+                  { className: "ml-4 flex items-center space-x-2" },
+                  React.createElement('span', { className: "text-red-600 font-bold" }, '-'),
+                  React.createElement('input', {
+                    type: "text",
+                    value: tempClientName,
+                    onChange: (e) => setTempClientName(e.target.value),
+                    placeholder: "Nombre del cliente",
+                    className: "px-3 py-1 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-600 font-bold",
+                    autoFocus: true
+                  }),
+                  React.createElement('button', 
+                    { onClick: saveClientName, className: "p-1 text-green-600 hover:text-green-700" },
+                    React.createElement(Save, { className: "h-4 w-4" })
+                  ),
+                  React.createElement('button', 
+                    { onClick: cancelEditingClient, className: "p-1 text-red-600 hover:text-red-700" },
+                    React.createElement(X, { className: "h-4 w-4" })
+                  )
+                ) :
+                React.createElement('div', 
+                  { className: "ml-4 flex items-center space-x-2" },
+                  clientName && React.createElement('span', { className: "text-red-600 font-bold" }, '- ' + clientName),
+                  React.createElement('button', 
+                    { 
+                      onClick: startEditingClient,
+                      className: "p-1 text-gray-400 hover:text-red-600 transition-colors"
+                    },
+                    React.createElement(Edit3, { className: "h-4 w-4" })
+                  )
+                )
+            ),
+            React.createElement('p', { className: "text-gray-600 mt-2" }, 
+              'Análisis de aprovechamiento de funcionalidades FortiSASE Standard License'
+            ),
+            React.createElement('div', 
+              { className: "flex items-center mt-3 text-sm text-gray-500" },
+              React.createElement('span', { className: "mr-4" }, '🔧 Licenciamiento Standard'),
+              React.createElement('span', { className: "mr-4" }, '📈 Análisis de Aprovechamiento'),
+              React.createElement('span', { className: "mr-4" }, '⚙️ Configuración de Funcionalidades'),
+              React.createElement('span', null, '📋 Reporte Ejecutivo')
+            )
+          ),
+          React.createElement('div', 
+            { className: "flex space-x-3" },
+            React.createElement('button', 
+              {
+                onClick: () => setShowCISOReport(!showCISOReport),
+                className: "flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              },
+              React.createElement(FileText, { className: "h-4 w-4 mr-2" }),
+              showCISOReport ? 'Dashboard' : 'Reporte Ejecutivo'
+            ),
+            React.createElement('button', 
+              {
+                onClick: () => setShowConfigPanel(!showConfigPanel),
+                className: "flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              },
+              React.createElement(Settings, { className: "h-4 w-4 mr-2" }),
+              'Configurar Licencias'
+            ),
+            React.createElement('button', 
+              {
+                onClick: exportReport,
+                className: "flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              },
+              React.createElement(Download, { className: "h-4 w-4 mr-2" }),
+              'Exportar Análisis'
+            )
+          )
+        ),
+        !clientName && React.createElement('div', 
+          { className: "mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg" },
+          React.createElement('div', 
+            { className: "flex items-center" },
+            React.createElement('div', 
+              { className: "flex-shrink-0" },
+              React.createElement(CheckCircle, { className: "h-5 w-5 text-blue-600" })
+            ),
+            React.createElement('div', 
+              { className: "ml-3" },
+              React.createElement('h3', { className: "text-sm font-medium text-blue-800" }, 
+                '👋 ¡Bienvenido al FortiSASE Health Check!'
+              ),
+              React.createElement('div', 
+                { className: "mt-2 text-sm text-blue-700" },
+                React.createElement('p', null, 
+                  'Para comenzar: 1) Agrega el nombre del cliente haciendo clic en el ícono de edición, 2) Haz clic en "Configurar Licencias" para meter los datos reales, 3) Revisa el análisis de aprovechamiento y genera reportes ejecutivos.'
+                )
+              )
+            )
+          )
+        )
+      ),
+      showConfigPanel && React.createElement(LicenseConfigPanel),
+      !showCISOReport && React.createElement('div', 
+        null,
+        React.createElement('div', 
+          { className: "bg-gradient-to-r from-red-600 to-red-800 rounded-xl shadow-lg mb-8 p-8 text-white" },
+          React.createElement('div', 
+            { className: "flex justify-between items-center mb-6" },
+            React.createElement('div', 
+              null,
+              React.createElement('h2', { className: "text-2xl font-bold" }, 'Aprovechamiento FortiSASE Standard'),
+              React.createElement('p', { className: "text-red-100 mt-1" }, 'Estado actual de utilización de funcionalidades incluidas')
+            ),
+            React.createElement('div', 
+              { className: "text-right" },
+              React.createElement('div', { className: "text-3xl font-bold" }, totalUtilization + '%'),
+              React.createElement('div', { className: "text-red-100 text-sm" }, 'Aprovechamiento General')
+            )
+          ),
+          React.createElement('div', 
+            { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" },
+            React.createElement('div', 
+              { className: "bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30" },
+              React.createElement('div', 
+                { className: "flex items-center justify-between mb-4" },
+                React.createElement(Users, { className: "h-10 w-10 text-red-200" }),
+                React.createElement('div', 
+                  { className: "text-right" },
+                  React.createElement('div', { className: "text-2xl font-bold" }, licenseData.totalLicenses),
+                  React.createElement('div', { className: "text-red-200 text-sm" }, 'Licencias Standard')
+                )
+              ),
+              React.createElement('div', 
+                { className: "flex justify-between text-sm" },
+                React.createElement('span', { className: "text-red-200" }, 'Utilizadas:'),
+                React.createElement('span', { className: "font-semibold" }, licenseData.activeLicenses)
+              ),
+              React.createElement('div', 
+                { className: "flex justify-between text-sm mt-1" },
+                React.createElement('span', { className: "text-red-200" }, 'Disponibles:'),
+                React.createElement('span', { className: "font-semibold" }, licenseData.availableLicenses)
+              )
+            ),
+            React.createElement('div', 
+              { className: "bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30" },
+              React.createElement('div', 
+                { className: "flex items-center justify-between mb-4" },
+                React.createElement(Shield, { className: "h-10 w-10 text-gray-200" }),
+                React.createElement('div', 
+                  { className: "text-right" },
+                  React.createElement('div', { className: "text-2xl font-bold" }, activeFeatures + '/' + featuresData.length),
+                  React.createElement('div', { className: "text-red-200 text-sm" }, 'Funcionalidades')
+                )
+              ),
+              React.createElement('div', 
+                { className: "grid grid-cols-3 gap-2 text-center text-xs" },
+                React.createElement('div', 
+                  null,
+                  React.createElement('div', { className: "text-gray-200 font-bold" }, activeFeatures),
+                  React.createElement('div', { className: "text-red-200" }, 'Activas')
+                ),
+                React.createElement('div', 
+                  null,
+                  React.createElement('div', { className: "text-amber-300 font-bold" }, partialFeatures),
+                  React.createElement('div', { className: "text-red-200" }, 'Parciales')
+                ),
+                React.createElement('div', 
+                  null,
+                  React.createElement('div', { className: "text-red-300 font-bold" }, inactiveFeatures),
+                  React.createElement('div', { className: "text-red-200" }, 'Inactivas')
+                )
+              )
+            ),
+            React.createElement('div', 
+              { className: "bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30" },
+              React.createElement('div', 
+                { className: "flex items-center justify-between mb-4" },
+                React.createElement(Target, { className: "h-10 w-10 text-amber-300" }),
+                React.createElement('div', 
+                  { className: "text-right" },
+                  React.createElement('div', { className: "text-2xl font-bold" }, securityCoverage + '%'),
+                  React.createElement('div', { className: "text-red-200 text-sm" }, 'Funciones Críticas')
+                )
+              ),
+              React.createElement('div', 
+                { className: "text-center" },
+                React.createElement('div', 
+                  { 
+                    className: 'text-lg font-bold ' + 
+                      (securityCoverage >= 90 ? 'text-green-300' : 
+                       securityCoverage >= 70 ? 'text-yellow-300' : 'text-red-300')
+                  }, 
+                  criticalActive + '/' + criticalFeatures.length + ' ACTIVAS'
+                ),
+                React.createElement('div', { className: "text-red-200 text-xs" }, 'Funcionalidades críticas')
+              )
+            ),
+            React.createElement('div', 
+              { className: "bg-white bg-opacity-15 rounded-lg p-6 backdrop-blur-sm border border-red-400 border-opacity-30" },
+              React.createElement('div', 
+                { className: "flex items-center justify-between mb-4" },
+                React.createElement(AlertTriangle, { className: "h-10 w-10 text-amber-300" }),
+                React.createElement('div', 
+                  { className: "text-right" },
+                  React.createElement('div', { className: "text-2xl font-bold" }, configurationGaps.length),
+                  React.createElement('div', { className: "text-red-200 text-sm" }, 'Gaps Config.')
+                )
+              ),
+              React.createElement('div', 
+                { className: "space-y-2 text-sm" },
+                React.createElement('div', 
+                  { className: "flex justify-between" },
+                  React.createElement('span', { className: "text-red-200" }, 'SSL Inspection:'),
+                  React.createElement('span', { className: "text-gray-200 font-semibold" }, 
+                    featuresData.filter(f => f.sslInspectionEnabled).length + '/' + 
+                    featuresData.filter(f => f.prerequisites.includes('ssl_inspection')).length
+                  )
+                ),
+                React.createElement('div', 
+                  { className: "flex justify-between" },
+                  React.createElement('span', { className: "text-red-200" }, 'Agentes:'),
+                  React.createElement('span', { className: "text-gray-200 font-semibold" }, 
+                    featuresData.filter(f => f.agentDeployed).length + '/' + featuresData.length
+                  )
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('div', 
+          { className: "grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" },
+          React.createElement('div', 
+            { className: "bg-white p-6 rounded-lg shadow-sm border border-gray-200" },
+            React.createElement('h3', { className: "text-lg font-semibold text-gray-900 mb-4" }, '📊 Aprovechamiento por Funcionalidad'),
+            React.createElement(ResponsiveContainer, { width: "100%", height: 400 },
+              React.createElement(BarChart, { data: utilizationData, margin: { top: 20, right: 30, left: 20, bottom: 100 } },
+                React.createElement(CartesianGrid, { strokeDasharray: "3 3", stroke: "#f3f4f6" }),
+                React.createElement(XAxis, { 
+                  dataKey: "name", 
+                  tick: { fontSize: 10, fill: '#374151' }, 
+                  angle: -45,
+                  textAnchor: "end",
+                  height: 100,
+                  interval: 0
+                }),
+                React.createElement(YAxis, { tick: { fontSize: 12, fill: '#374151' } }),
+                React.createElement(Tooltip, { 
+                  contentStyle: { 
+                    backgroundColor: '#f9fafb', 
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px'
+                  },
+                  formatter: (value, name) => [value + '%', 'Aprovechamiento'],
+                  labelFormatter: (label) => {
+                    const item = utilizationData.find(d => d.name === label);
+                    return item ? item.fullName : label;
+                  }
+                }),
+                React.createElement(Bar, { dataKey: "utilization", fill: "#dc2626", radius: [4, 4, 0, 0] })
+              )
+            )
+          ),
+          React.createElement('div', 
+            { className: "bg-white p-6 rounded-lg shadow-sm border border-gray-200" },
+            React.createElement('div', 
+              { className: "flex justify-between items-center mb-4" },
+              React.createElement('h3', { className: "text-lg font-semibold text-gray-900" }, '🔄 Distribución de Estados'),
+              React.createElement('div', 
+                { className: "text-right" },
+                React.createElement('div', { className: "text-2xl font-bold text-gray-900" }, featuresData.length),
+                React.createElement('div', { className: "text-sm text-gray-600" }, 'Total Funcionalidades')
+              )
+            ),
+            React.createElement(ResponsiveContainer, { width: "100%", height: 400 },
+              React.createElement(PieChart, null,
+                React.createElement(Pie, {
+                  data: statusData,
+                  cx: "50%",
+                  cy: "50%",
+                  outerRadius: 120,
+                  dataKey: "value",
+                  label: ({ name, value, percent }) => name + ': ' + value + ' (' + (percent * 100).toFixed(0) + '%)'
+                },
+                  statusData.map((entry, index) => 
+                    React.createElement(Cell, { key: 'cell-' + index, fill: entry.color })
+                  )
+                ),
+                React.createElement(Tooltip, { 
+                  contentStyle: { 
+                    backgroundColor: '#f9fafb', 
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px'
+                  }
+                })
+              )
+            ),
+            React.createElement('div', 
+              { className: "mt-4 grid grid-cols-3 gap-4 text-center" },
+              React.createElement('div', 
+                { className: "p-3 bg-green-50 rounded-lg border border-green-200" },
+                React.createElement('div', { className: "text-2xl font-bold text-green-600" }, activeFeatures),
+                React.createElement('div', { className: "text-xs text-green-700" }, 'Activas')
+              ),
+              React.createElement('div', 
+                { className: "p-3 bg-yellow-50 rounded-lg border border-yellow-200" },
+                React.createElement('div', { className: "text-2xl font-bold text-yellow-600" }, partialFeatures),
+                React.createElement('div', { className: "text-xs text-yellow-700" }, 'Parciales')
+              ),
+              React.createElement('div', 
+                { className: "p-3 bg-red-50 rounded-lg border border-red-200" },
+                React.createElement('div', { className: "text-2xl font-bold text-red-600" }, inactiveFeatures),
+                React.createElement('div', { className: "text-xs text-red-700" }, 'Inactivas')
+              )
+            )
+          )
+        ),
+        React.createElement('div', 
+          { className: "bg-white rounded-lg shadow-sm border border-gray-200 mb-6" },
+          React.createElement('div', 
+            { className: "p-6 border-b border-gray-200" },
+            React.createElement('h3', { className: "text-lg font-semibold text-gray-900" }, '📋 Funcionalidades FortiSASE Standard'),
+            React.createElement('p', { className: "text-sm text-gray-600 mt-1" }, 'Basado en la matriz oficial de funcionalidades por licencia')
+          ),
+          React.createElement('div', 
+            { className: "p-6" },
+            React.createElement('div', 
+              { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" },
+              featuresData.map((feature) => 
+                React.createElement('div', 
+                  { 
+                    key: feature.id,
+                    className: "p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                  },
+                  React.createElement('div', 
+                    { className: "flex justify-between items-start mb-3" },
+                    React.createElement('div', 
+                      { className: "flex-grow" },
+                      React.createElement('h4', { className: "font-medium text-gray-900 text-sm" }, feature.name),
+                      React.createElement('p', { className: "text-xs text-gray-600 mt-1" }, feature.category)
+                    ),
+                    React.createElement('span', 
+                      { 
+                        className: 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(feature.status)
+                      },
+                      getStatusIcon(feature.status)
+                    )
+                  ),
+                  React.createElement('div', 
+                    { className: "space-y-2" },
+                    React.createElement('div', 
+                      { className: "flex justify-between text-sm" },
+                      React.createElement('span', { className: "text-gray-600" }, 'Licencias:'),
+                      React.createElement('span', { className: "font-medium" }, feature.licensesActive + '/' + feature.licensesRequired)
+                    ),
+                    React.createElement('div', 
+                      { className: "flex items-center" },
+                      React.createElement('div', 
+                        { className: "w-full bg-gray-200 rounded-full h-2 mr-2" },
+                        React.createElement('div', {
+                          className: 'h-2 rounded-full ' + 
+                            (feature.utilizationRate >= 85 ? 'bg-green-500' : 
+                             feature.utilizationRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'),
+                          style: { width: feature.utilizationRate + '%' }
+                        })
+                      ),
+                      React.createElement('span', { className: "text-xs text-gray-900 min-w-[35px]" }, feature.utilizationRate + '%')
+                    ),
+                    React.createElement('div', 
+                      { className: "flex justify-between text-sm" },
+                      React.createElement('span', { className: "text-gray-600" }, 'Prioridad:'),
+                      React.createElement('span', 
+                        { 
+                          className: 'text-xs px-2 py-1 rounded-full border ' + getValueColor(feature.businessValue)
+                        },
+                        feature.businessValue
+                      )
+                    ),
+                    feature.configurationStatus && React.createElement('div', 
+                      { className: "flex justify-between text-xs" },
+                      React.createElement('span', { className: "text-gray-600" }, 'Config:'),
+                      React.createElement('span', 
+                        { 
+                          className: 'px-2 py-1 rounded-full ' + 
+                            (feature.configurationStatus === 'Completa' ? 'bg-green-100 text-green-800' :
+                             feature.configurationStatus === 'Incompleta' ? 'bg-yellow-100 text-yellow-800' :
+                             'bg-red-100 text-red-800')
+                        },
+                        feature.configurationStatus
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('div', 
+          { className: "bg-white rounded-lg shadow-sm border border-gray-200 p-6" },
+          React.createElement('h3', { className: "text-lg font-semibold text-gray-900 mb-4" }, '⚡ Acciones Rápidas'),
+          React.createElement('div', 
+            { className: "grid grid-cols-1 md:grid-cols-3 gap-6" },
+            React.createElement('div', 
+              { className: "p-4 bg-blue-50 rounded-lg border border-blue-200" },
+              React.createElement('h4', { className: "font-medium text-blue-900 mb-2" }, '📊 Reporte Ejecutivo'),
+              React.createElement('p', { className: "text-sm text-blue-800 mb-3" }, 
+                'Generar reporte completo con análisis y recomendaciones para presentar a la dirección'
+              ),
+              React.createElement('button', 
+                {
+                  onClick: () => setShowCISOReport(true),
+                  className: "text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                },
+                'Ver Reporte'
+              )
+            ),
+            React.createElement('div', 
+              { className: "p-4 bg-green-50 rounded-lg border border-green-200" },
+              React.createElement('h4', { className: "font-medium text-green-900 mb-2" }, '⚙️ Configurar Licencias'),
+              React.createElement('p', { className: "text-sm text-green-800 mb-3" }, 
+                'Ajustar las cantidades de licencias adquiridas y en uso para cada funcionalidad'
+              ),
+              React.createElement('button', 
+                {
+                  onClick: () => setShowConfigPanel(true),
+                  className: "text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                },
+                'Configurar'
+              )
+            ),
+            React.createElement('div', 
+              { className: "p-4 bg-amber-50 rounded-lg border border-amber-200" },
+              React.createElement('h4', { className: "font-medium text-amber-900 mb-2" }, '📥 Exportar Análisis'),
+              React.createElement('p', { className: "text-sm text-amber-800 mb-3" }, 
+                'Descargar el análisis completo en formato JSON para integración con otros sistemas'
+              ),
+              React.createElement('button', 
+                {
+                  onClick: exportReport,
+                  className: "text-sm bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700"
+                },
+                'Exportar'
+              )
+            )
+          )
+        )
+      ),
+      React.createElement('div', 
+        { className: "mt-8 text-center text-sm text-gray-500" },
+        React.createElement('p', null, '📊 FortiSASE Health Check v5.0 - Standard License Analysis'),
+        React.createElement('p', { className: "mt-1" }, '🎯 Basado en la matriz oficial de funcionalidades FortiSASE')
+      )
+    )
   );
 };
 
